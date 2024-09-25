@@ -14,19 +14,19 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage: storage })
 
-//Create router
+//Create Blog
 router.post("/create-blog", upload.single("image"), async (req, res) => {
     try {
-        const { blog_heading, blog_url, blog_date, isActivate } = req.body;
+        const { heading, blog_url, blog_date, title, short_description, meta_description, description } = req.body;
+        // console.log(req.body);
         let blog_image;
-        if(req.file){
+        if (req.file) {
             blog_image = req.file.filename;
         }
-
-        if (!blog_heading || !blog_url || !blog_date || !isActivate || !blog_image) {
+        if (!heading || !blog_url) {
             return res.json({ message: "Please fill all the fields", status: 0 });
         }
-        const data = await new blogs_model({ blog_heading, blog_url, blog_date, isActivate, blog_image })
+        const data = await new blogs_model({ heading, blog_url, blog_date, title, short_description, meta_description, description })
         await data.save();
         res.json({ message: "Blog created", status: 1 });
     } catch (err) {
@@ -46,6 +46,17 @@ router.get("/get-blogs", async (req, res) => {
     }
 })
 
+//Get one Blogs_data
+router.post("/get_blog_byId", async (req, res) => {
+    try {
+        const { id } = req.body;
+        const data = await blogs_model.findOne({ _id: id });
+        res.json({ message: "Get blog", status: 1, data: data });
+    } catch (err) {
+        console.log(err);
+        res.send(err);
+    }
+})
 //Get Activated Blogs_data
 router.get("/get-activated-blogs", async (req, res) => {
     try {
@@ -60,13 +71,10 @@ router.get("/get-activated-blogs", async (req, res) => {
 //Update blog
 router.post("/update_blog", upload.single("image"), async (req, res) => {
     try {
-        const { blog_heading, blog_url, blog_date, isActivate, id } = req.body;
+        const { heading, blog_url, blog_date, title, short_description, meta_description, description, id } = req.body;
 
         let updateData = {
-            blog_heading,
-            blog_url,
-            blog_date,
-            isActivate
+            heading, blog_url, blog_date, title, short_description, meta_description, description
         };
 
         if (req.file) {
@@ -92,12 +100,17 @@ router.post("/delete_blog", async (req, res) => {
         const id = req.body.id;
 
         const blog = await blogs_model.findById({ _id: id });
+
+
         if (!blog) {
             return res.status(404).send({ message: "Blog not found", status: 0 });
         }
-
-        await blogs_model.findByIdAndDelete({ _id: id });
-        res.status(200).send({ message: "Blog deleted successfully", status: 1 });
+        const delete_blog = await blogs_model.findByIdAndDelete({ _id: id });
+        let data;
+        if (delete_blog) {
+            data = await blogs_model.find({});
+        }
+        res.status(200).send({ message: "Blog deleted successfully", status: 1, data: data });
     } catch (err) {
         console.log(err);
         res.send(err);

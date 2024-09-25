@@ -10,6 +10,7 @@ const subcategory_router = require("./router/subcategory_router");
 const admin_router = require("./router/admin_router");
 const blog_router = require("./router/blog_router");
 const testimonial_router = require("./router/testimonials_router")
+const enquiry_router = require("./router/enquiry_router")
 
 //Middlewares
 app.use(cors())
@@ -18,7 +19,7 @@ const Authentication = require("./middleware/authentication");
 app.use('/uploads', express.static('uploads'));
 
 
-app.get('/',(req,res)=>{
+app.get('/', (req, res) => {
     res.send("HELLO FROM OZARK...")
 })
 //routers
@@ -27,6 +28,7 @@ app.use("/category", category_router);
 app.use("/subcategory", subcategory_router);
 app.use("/blogs", blog_router)
 app.use("/testimonials", testimonial_router)
+app.use("/enquiry", enquiry_router)
 
 
 app.listen(port, () => {
