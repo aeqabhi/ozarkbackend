@@ -18,6 +18,9 @@ const Authentication = require("./middleware/authentication");
 app.use('/uploads', express.static('uploads'));
 
 
+app.get('/',(req,res)=>{
+    res.send("HELLO FROM OZARK...")
+})
 //routers
 app.use("/admin", admin_router)
 app.use("/category", category_router);
