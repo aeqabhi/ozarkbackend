@@ -11,6 +11,7 @@ const admin_router = require("./router/admin_router");
 const blog_router = require("./router/blog_router");
 const testimonial_router = require("./router/testimonials_router")
 const enquiry_router = require("./router/enquiry_router")
+const service_router = require("./router/services_router");
 
 //Middlewares
 app.use(cors())
@@ -24,11 +25,13 @@ app.get('/', (req, res) => {
 })
 //routers
 app.use("/admin", admin_router)
+app.use("/services",service_router);
 app.use("/category", category_router);
 app.use("/subcategory", subcategory_router);
 app.use("/blogs", blog_router)
 app.use("/testimonials", testimonial_router)
 app.use("/enquiry", enquiry_router)
+
 
 
 app.listen(port, () => {

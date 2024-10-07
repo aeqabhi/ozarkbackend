@@ -17,16 +17,26 @@ const upload = multer({ storage: storage })
 //Create Blog
 router.post("/create-blog", upload.single("image"), async (req, res) => {
     try {
-        const { heading, blog_url, blog_date, title, short_description, meta_description, description } = req.body;
-        // console.log(req.body);
-        let blog_image;
+
+        let { heading, blog_url, blog_date, title, short_description, meta_description, description } = req.body;
+
+        let image;
         if (req.file) {
-            blog_image = req.file.filename;
+            image = req.file.filename;
         }
+        console.log(req.body);
         if (!heading || !blog_url) {
             return res.json({ message: "Please fill all the fields", status: 0 });
         }
-        const data = await new blogs_model({ heading, blog_url, blog_date, title, short_description, meta_description, description })
+        const isExist = await blogs_model.findOne({
+            blog_url: blog_url.toLowerCase().split(" ").join("-")
+        });
+        if (isExist) {
+            return res.json({ message: "Blog already exist !", status: 0 });
+        }
+
+        blog_url = blog_url.toLowerCase().split(" ").join("-");
+        const data = await new blogs_model({ heading, blog_url, blog_date, image, title, short_description, meta_description, description })
         await data.save();
         res.json({ message: "Blog created", status: 1 });
     } catch (err) {
@@ -36,7 +46,7 @@ router.post("/create-blog", upload.single("image"), async (req, res) => {
 
 
 //Get all Blog_data
-router.get("/get-blogs", async (req, res) => {
+router.get("/get_blogs", async (req, res) => {
     try {
         const data = await blogs_model.find();
         res.json({ message: "Get blogs data", status: 1, data: data });
@@ -58,9 +68,9 @@ router.post("/get_blog_byId", async (req, res) => {
     }
 })
 //Get Activated Blogs_data
-router.get("/get-activated-blogs", async (req, res) => {
+router.get("/get_activated_blogs", async (req, res) => {
     try {
-        const data = await blogs_model.find({ isActivate: true });
+        const data = await blogs_model.find({ status: true });
         res.json({ message: "Get activated blogs", status: 1, data: data });
     } catch (err) {
         console.log(err);
@@ -77,11 +87,21 @@ router.post("/update_blog", upload.single("image"), async (req, res) => {
             heading, blog_url, blog_date, title, short_description, meta_description, description
         };
 
+        const isExist = await blogs_model.findOne({
+            blog_url: updateData.blog_url.toLowerCase().split(" ").join("-")
+        });
+        if (isExist && isExist._id != id) {
+            return res.json({ message: "Blog already exist !", status: 0 });
+        }
+        updateData.blog_url = updateData.blog_url.toLowerCase().split(" ").join("-");
+
         if (req.file) {
             updateData.blog_image = req.file.filename;
         }
 
-        const data = await blogs_model.findByIdAndUpdate({ _id: id }, updateData, { new: true });
+
+
+        const data = await blogs_model.findByIdAndUpdate({ _id: id }, updateData);
         if (!data) {
             return res.json({ message: "Blog not found", status: 0 })
         }
@@ -98,10 +118,7 @@ router.post("/update_blog", upload.single("image"), async (req, res) => {
 router.post("/delete_blog", async (req, res) => {
     try {
         const id = req.body.id;
-
         const blog = await blogs_model.findById({ _id: id });
-
-
         if (!blog) {
             return res.status(404).send({ message: "Blog not found", status: 0 });
         }
@@ -114,6 +131,29 @@ router.post("/delete_blog", async (req, res) => {
     } catch (err) {
         console.log(err);
         res.send(err);
+    }
+})
+
+
+//Activate of deactivate
+router.post("/change_status", async (req, res) => {
+    try {
+        const status = req.body.status;
+        const id = req.body.id;
+
+        if (status === true) {
+            await blogs_model.findByIdAndUpdate({ _id: id }, { status: false })
+            const data = await blogs_model.find({});
+            res.json({ message: "Blog Deactivated", status: 1, data: data, activeStatus: 0 })
+        } else {
+            await blogs_model.findByIdAndUpdate({ _id: id }, { status: true })
+            const data = await blogs_model.find({});
+            res.json({ message: "Blog Activated", status: 1, data: data, activeStatus: 1 })
+        }
+
+
+    } catch (err) {
+        console.log(err);
     }
 })
 

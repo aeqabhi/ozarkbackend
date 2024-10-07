@@ -4,12 +4,15 @@ const blogs_schema = new mongoose.Schema({
     heading: String,
     blog_url: String,
     blog_date: String,
-    blog_image: String,
-    // isActivate: Boolean,
+    image: String,
     short_description: String,
     title: String,
     meta_description: String,
-    description: String
+    description: String,
+    status: {
+        type: Boolean,
+        default: true
+    }
 })
 
 const blogs_model = new mongoose.model("blogs_model", blogs_schema);

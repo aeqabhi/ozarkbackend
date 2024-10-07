@@ -26,6 +26,14 @@ router.post("/create_testimonial", upload.single("image"), async (req, res) => {
         if (!name || !designation || !content || !image) {
             return res.json({ message: "Please fill all the fields", status: 0 })
         }
+
+        const isExist = await testimonials_model.findOne({
+            name: name.toLowerCase()
+        });
+        if (isExist) {
+            return res.json({ message: "Already exist", status: 0 })
+        }
+
         const data = new testimonials_model({ name, designation, content, image })
         await data.save();
         res.json({ message: "Testimonial created", status: 1 })
@@ -99,6 +107,30 @@ router.post("/delete_testimonials", async (req, res) => {
         console.log(err);
         res.json({ message: "Unable to delete testimonials", status: 0 })
     }
+})
+
+
+//change status
+router.post("/change_status", async (req, res) => {
+    try {
+        const { id } = req.body;
+        const { status } = req.body;
+
+       
+
+        if (status === true) {
+            await testimonials_model.findByIdAndUpdate({ _id: id }, { status: false });
+            const data = await testimonials_model.find({});
+            res.json({ message: "Testimonial Deactivated", status: 1, data: data });
+        } else {
+            await testimonials_model.findByIdAndUpdate({ _id: id }, { status: true });
+            const data = await testimonials_model.find({});
+            res.json({ message: "Testimonial Activated", status: 1, data: data });
+        }
+    } catch (err) {
+        console.log(err);
+    }
+
 })
 
 module.exports = router;
