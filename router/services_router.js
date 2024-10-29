@@ -88,12 +88,14 @@ router.post("/update_service", upload.single("image"), async (req, res) => {
             return res.json({ message: "Please fill all the fields", status: 0 });
         }
 
+        console.log(req.body);
         //check duplicity
         service_url = service_url.toLowerCase().split(" ").join("-");
         const isServiceExist = await service_model.findOne({
             service_url: service_url
         })
 
+   
         if (isServiceExist && isServiceExist._id != id) {
             return res.json({ message: "Service Already exist", status: 0 });
         }
